@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            color: #2d3748;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: right;
+            margin-bottom: 2rem;
+        }
+
+        .language-btn {
+            background: none;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .language-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .epigraph {
+            text-align: center;
+            font-style: italic;
+            margin-bottom: 2rem;
+            color: #718096;
+        }
+
+        .epigraph-author {
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        h1 {
+            color: #2d3748;
+            margin: 0 0 1.5rem 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .instruction {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f7fafc;
+            border-radius: 12px;
+            line-height: 1.5;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 1.5rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f7fafc;
+        }
+
+        tr:hover {
+            background-color: #edf2f7;
+        }
+
+        .positive {
+            color: #38a169;
+        }
+
+        .negative {
+            color: #e53e3e;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1rem;
+            gap: 1rem;
+        }
+
+        .button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: transform 0.1s;
+        }
+
+        .button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        #exportButton {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="language-btn" onclick="toggleLanguage()">EN/RU</button>
+        </div>
+
+        <div class="epigraph">
+            <div id="epigraphText">"Data analysis reveals what the eyes cannot see"</div>
+            <div class="epigraph-author">Three-Eyed Webster-104</div>
+        </div>
+
+        <h1 id="mainTitle">Topic Analysis Data</h1>
+        <p class="subtitle" id="subtitle">Metrics comparison across different topics</p>
+        
+        <div class="instruction" id="instruction">
+            Below is the analysis of different topics with their respective metrics. Use the table to compare the performance across various dimensions.
+        </div>
+
+        <div class="table-container">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th id="topicHeader">Topic</th>
+                        <th>W</th>
+                        <th>X</th>
+                        <th>Y</th>
+                        <th>Z</th>
+                        <th>J</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Table content will be filled by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="button-container">
+            <button class="button" id="exportButton">Export Data</button>
+        </div>
+    </div>
+
+    <script>
+        // Retrieve and parse data from localStorage
+const storedData = localStorage.getItem("sortedData");
+const data = storedData ? JSON.parse(storedData) : {};
+
+// Language translations for UI elements
+const translations = {
+    en: {
+        mainTitle: "Topic Analysis Data",
+        subtitle: "Metrics comparison across different topics",
+        instruction: "Below is the analysis of different topics with their respective metrics. Use the table to compare the performance across various dimensions.",
+        topicHeader: "Topic",
+        exportButton: "Export Data",
+        epigraphText: "\"Data analysis reveals what the eyes cannot see\""
+    },
+    ru: {
+        mainTitle: "Данные анализа тем",
+        subtitle: "Сравнение метрик по различным темам",
+        instruction: "Ниже представлен анализ различных тем с соответствующими метриками. Используйте таблицу для сравнения показателей по различным измерениям.",
+        topicHeader: "Тема",
+        exportButton: "Экспорт данных",
+        epigraphText: "\"Анализ данных раскрывает то, что глаза не видят\""
+    }
+};
+
+let currentLang = 'en'; // Default language setting
+
+// Toggle between English and Russian
+function toggleLanguage() {
+    currentLang = currentLang === 'en' ? 'ru' : 'en';
+    updateTexts(); // Update UI text elements
+}
+
+// Update UI elements with the selected language
+function updateTexts() {
+    document.getElementById('mainTitle').textContent = translations[currentLang].mainTitle;
+    document.getElementById('subtitle').textContent = translations[currentLang].subtitle;
+    document.getElementById('instruction').textContent = translations[currentLang].instruction;
+    document.getElementById('topicHeader').textContent = translations[currentLang].topicHeader;
+    document.getElementById('exportButton').textContent = translations[currentLang].exportButton;
+    document.getElementById('epigraphText').textContent = translations[currentLang].epigraphText;
+}
+
+// Populate the table with topic analysis data
+function populateTable() {
+    const tableBody = document.getElementById('tableBody');
+    tableBody.innerHTML = ''; // Clear previous data
+
+    Object.entries(data).forEach(([topic, values]) => {
+        const row = document.createElement('tr');
+
+        // Create topic name cell
+        const topicCell = document.createElement('td');
+        topicCell.textContent = topic;
+        topicCell.style.fontWeight = '500';
+        topicCell.style.textAlign = 'left';
+        row.appendChild(topicCell);
+
+        // Define metric display order
+        const order = ['W', 'X', 'Y', 'Z', 'J'];
+        
+        // Create cells for each metric
+        order.forEach(key => {
+            const cell = document.createElement('td');
+            const value = values[key];
+
+            // Display value with one decimal place
+            cell.textContent = value.toFixed(1);
+
+            // Apply styling based on positive/negative value
+            if (value > 0) {
+                cell.classList.add('positive');
+            } else if (value < 0) {
+                cell.classList.add('negative');
+            }
+
+            row.appendChild(cell);
+        });
+
+        tableBody.appendChild(row);
+    });
+}
+
+// Export table data as a CSV file
+document.getElementById('exportButton').addEventListener('click', () => {
+    const csvContent = "data:text/csv;charset=utf-8," + 
+        "Topic,W,X,Y,Z,J\n" + 
+        Object.entries(data).map(([topic, values]) => 
+            `"${topic}",${values.W},${values.X},${values.Y},${values.Z},${values.J}`
+        ).join("\n");
+
+    // Create a downloadable CSV file
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "topic_analysis_data.csv");
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+});
+
+// Initialize table and translations
+populateTable();
+updateTexts();
+    </script>
+</body>
+</html>

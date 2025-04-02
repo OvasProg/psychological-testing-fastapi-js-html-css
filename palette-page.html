@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            color: #2d3748;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: right;
+            margin-bottom: 2rem;
+        }
+
+        .language-btn {
+            background: none;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .language-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .epigraph {
+            text-align: center;
+            font-style: italic;
+            margin-bottom: 2rem;
+            color: #718096;
+        }
+
+        .epigraph-author {
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        h1 {
+            color: #2d3748;
+            margin: 0 0 1.5rem 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .instruction {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #f7fafc;
+            border-radius: 12px;
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+
+        .brush-size-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #f7fafc;
+            border-radius: 12px;
+        }
+
+        .brush-control {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        #brushSize {
+            width: 200px;
+            accent-color: #667eea;
+        }
+
+        #brushSizeValue {
+            background: #667eea;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            min-width: 2.5rem;
+            text-align: center;
+        }
+
+        .color-picker-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .color-picker {
+            width: 100px;
+            height: 100px;
+            padding: 0;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .selected-colors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+            min-height: 60px;
+            padding: 1rem;
+            background: #f7fafc;
+            border-radius: 12px;
+            width: 100%;
+        }
+
+        .color-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .color-box:hover::after {
+            content: '×';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #ff4444;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: transform 0.1s;
+            font-size: 1.1rem;
+        }
+
+        .button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            gap: 1rem;
+        }
+
+        .ok-button {
+            background: #667eea;
+            min-width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="language-btn" onclick="toggleLanguage()">EN/RU</button>
+        </div>
+
+        <div class="epigraph">
+            <div>"Here everyone will find something to do for soul and body"</div>
+            <div class="epigraph-author">Three-Eyed Webster-104</div>
+        </div>
+
+        <h1 id="mainTitle">Palette</h1>
+        
+        <div class="brush-size-container">
+            <p id="brushInstruction">Please select the brush size and click OK button</p>
+            <div class="brush-control">
+                <label>
+                    <span id="brushLabel">Brush size:</span>
+                    <input type="range" id="brushSize" min="1" max="50" value="5">
+                    <span id="brushSizeValue">5</span>px
+                </label>
+            </div>
+            <button class="button ok-button" id="okButton">OK</button>
+        </div>
+        
+        <div class="instruction" id="instruction">
+            Please, following the rule of the ancient daisy fortune-telling: "love - don't love, yes - no, will it come true - won't come true," choose 13 colors in any order as your "third" eye will see in the spectrum - this will be your working palette. After collecting your palette, press the "Submit" button.
+        </div>
+
+        <div class="color-picker-container">
+            <input type="color" class="color-picker" id="colorPicker" value="#667eea">
+            <div class="selected-colors" id="selectedColors"></div>
+        </div>
+
+        <div class="button-container">
+            <button class="button" id="submitButton" disabled>Submit</button>
+        </div>
+    </div>
+
+    <script>
+
+// Language translations for UI elements
+const translations = {
+    en: {
+        mainTitle: "Palette",
+        brushInstruction: "Please select the brush size and click OK button",
+        instruction: 'Please, following the rule of the ancient daisy fortune-telling: "love - don\'t love, yes - no, will it come true - won\'t come true," choose 13 colors in any order as your "third" eye will see in the spectrum - this will be your working palette. After collecting your palette, press the "Submit" button.',
+        brushLabel: "Brush size:",
+        okButton: "OK",
+        submitButton: "Submit",
+        epigraph: '"Here everyone will find something to do for soul and body"'
+    },
+    ru: {
+        mainTitle: "Палитра",
+        brushInstruction: "Пожалуйста выберите размер кисти и нажмите кнопку Ок",
+        instruction: 'Пожалуйста, по правилу старинного гадания на ромашке: «любо – не любо, да – нет, сбудется – не сбудется», – выберите 13 цветов в произвольном порядке так, как ваш «третий» глаз увидит в спектре – это будет ваша рабочая палитра. Собрав свою палитру, нажмите клавишу «Отправить».',
+        brushLabel: "Размер кисти:",
+        okButton: "Ок",
+        submitButton: "Отправить",
+        epigraph: '«Здесь каждый найдет занятие для души и тела»'
+    }
+};
+
+let currentLang = 'en'; // Default language
+const selectedColors = new Set(); // Store selected colors
+const REQUIRED_COLORS = 13; // Required number of colors for submission
+let brushSizeConfirmed = false; // Track brush size confirmation
+
+// Toggle between English and Russian
+function toggleLanguage() {
+    currentLang = currentLang === 'en' ? 'ru' : 'en';
+    updateTexts(); // Update UI text elements
+}
+
+// Update UI elements with the selected language
+function updateTexts() {
+    document.getElementById('mainTitle').textContent = translations[currentLang].mainTitle;
+    document.getElementById('brushInstruction').textContent = translations[currentLang].brushInstruction;
+    document.getElementById('instruction').textContent = translations[currentLang].instruction;
+    document.getElementById('brushLabel').textContent = translations[currentLang].brushLabel;
+    document.getElementById('okButton').textContent = translations[currentLang].okButton;
+    document.getElementById('submitButton').textContent = translations[currentLang].submitButton;
+    document.querySelector('.epigraph div:first-child').textContent = translations[currentLang].epigraph;
+}
+
+// UI Elements
+const colorPicker = document.getElementById('colorPicker');
+const selectedColorsContainer = document.getElementById('selectedColors');
+const submitButton = document.getElementById('submitButton');
+const brushSize = document.getElementById('brushSize');
+const brushSizeValue = document.getElementById('brushSizeValue');
+const okButton = document.getElementById('okButton');
+
+// Update displayed brush size when slider changes
+brushSize.addEventListener('input', () => {
+    brushSizeValue.textContent = brushSize.value;
+});
+
+// Confirm brush size selection
+okButton.addEventListener('click', () => {
+    brushSizeConfirmed = true;
+    localStorage.setItem('brushSize', brushSize.value); // Store brush size
+    okButton.disabled = true;
+    brushSize.disabled = true;
+    updateSubmitButton(); // Check if submission can be enabled
+});
+
+// Handle color selection from the color picker
+colorPicker.addEventListener('change', (e) => {
+    if (selectedColors.size < REQUIRED_COLORS) {
+        addColor(e.target.value);
+    }
+});
+
+// Add selected color to the palette
+function addColor(color) {
+    if (!selectedColors.has(color)) {
+        selectedColors.add(color);
+        updateColorDisplay();
+        updateSubmitButton();
+    }
+}
+
+// Remove selected color from the palette
+function removeColor(color) {
+    selectedColors.delete(color);
+    updateColorDisplay();
+    updateSubmitButton();
+}
+
+// Update the color display UI
+function updateColorDisplay() {
+    selectedColorsContainer.innerHTML = ''; // Clear current display
+
+    selectedColors.forEach(color => {
+        const colorBox = document.createElement('div');
+        colorBox.className = 'color-box';
+        colorBox.style.backgroundColor = color;
+        colorBox.onclick = () => removeColor(color); // Allow removal on click
+        selectedColorsContainer.appendChild(colorBox);
+    });
+}
+
+// Enable or disable the submit button based on conditions
+function updateSubmitButton() {
+    submitButton.disabled = !(selectedColors.size === REQUIRED_COLORS && brushSizeConfirmed);
+}
+
+// Handle submit button click - store data and redirect
+submitButton.addEventListener('click', () => {
+    localStorage.setItem('selectedColors', JSON.stringify([...selectedColors])); // Store selected colors
+    window.location.href = 'trialogue-page.html'; // Redirect to the next page
+});
+
+// Initialize UI elements
+updateTexts();
+    </script>
+</body>
+</html>

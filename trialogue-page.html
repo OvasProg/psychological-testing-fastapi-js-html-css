@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            color: #2d3748;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: right;
+            margin-bottom: 2rem;
+        }
+
+        .language-btn {
+            background: none;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .language-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .epigraph {
+            text-align: center;
+            font-style: italic;
+            margin-bottom: 2rem;
+            color: #718096;
+        }
+
+        .epigraph-author {
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        h1 {
+            color: #2d3748;
+            margin: 0 0 1.5rem 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .drawing-section {
+            flex: 1;
+        }
+
+        .control-section {
+            width: 300px;
+            background: #f7fafc;
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .color-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .color-box.selected {
+            transform: scale(1.1);
+            border-color: #2d3748;
+        }
+
+        #canvas {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            cursor: crosshair;
+            width: 100%;
+            height: auto; /* Maintain aspect ratio */
+            margin: 1rem 0;
+        }
+
+        .topic-section {
+            margin-bottom: 2rem;
+        }
+
+        .topic-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .rating-btn {
+            width: 32px;
+            height: 32px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .rating-btn.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: transform 0.1s;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+
+        .button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .rating-scale {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.25rem;
+            margin: 1rem 0;
+        }
+
+        .rating-scale-row2 {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.25rem;
+            margin: 0.5rem 2rem 1rem 2rem;
+        }
+
+        /* Add styles for the timer and popup */
+        .timer-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        /* Add clear button styles */
+        .clear-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-right: 1rem;
+            transition: transform 0.1s;
+        }
+
+        .clear-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .post-start-instruction {
+            margin-top: 1rem;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Previous HTML structure remains the same until the main-content div -->
+    <div class="container">
+        <div class="header">
+            <button class="language-btn" onclick="toggleLanguage()">EN/RU</button>
+        </div>
+
+        <div class="epigraph">
+            <div>"Here everyone will find something to do for soul and body"</div>
+            <div class="epigraph-author">Three-Eyed Webster-104</div>
+        </div>
+
+        <h1 id="mainTitle">Trialogue</h1>
+        
+        <div class="main-content">
+            <div class="drawing-section">
+                <div class="color-palette" id="colorPalette"></div>
+                <canvas id="canvas" width="800" height="500"></canvas>
+                <div class="button-group">
+                    <button class="clear-button" id="clearButton">Clear Canvas</button>
+                    <button class="button" id="submitButton" disabled>Submit</button>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="topic-section">
+                    <div class="topic-title" id="currentTopic">I am a man</div>
+                    <p id="ratePrompt">Rate your attitude towards the topic and click on the scale number that resonated with this task. A minus means a negative attitude, e.g. (-6) means "I hate it" and (-1) means "I dislike it a bit." A plus means a positive attitude, e.g. (+6) means "I like it very much, It's great!" and (+1) means "It's ok, I like it a bit.</p>
+                    <div class="rating-scale" id="ratingRow1">
+                        <!-- First row of rating buttons (-6 to 0) -->
+                    </div>
+                    <div class="rating-scale-row2" id="ratingRow2">
+                        <!-- Second row of rating buttons (1 to 6) -->
+                    </div>
+                    <p id="drawPrompt">Confirm your numerical response with colored lines in any format, even doodles. You will have 60 seconds. Press the button when you are ready to start drawing.</p>
+                    <button class="button" id="startButton" disabled>Start</button>
+                    <p class="post-start-instruction" id="postStartInstruction">When you finish drawing, click the Submit button.</p>
+                </div>
+                <div class="alert" id="alert">Please rate your attitude towards the topic first</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    <div class="timer-popup" id="timerPopup">Time is up</div>
+
+    <script>
+
+        let socket;
+        let isDrawing = false;
+        let isDrawingEnabled = false;
+        let timer = null;
+        let hasStartedDrawing = false;
+        let stopReconnection = false; // Controls reconnection attempts
+
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const userPalette = JSON.parse(localStorage.getItem("selectedColors")) || [];
+        let currentColor = userPalette[0] || "#000000";
+        const clearButton = document.getElementById("clearButton");
+        const startButton = document.getElementById("startButton");
+        const pixelUpdateInterval = 50; // Send data every 50ms
+
+        // Function to initialize the WebSocket connection
+        let keepAliveInterval; // Store interval ID for cleanup
+        
+        let finalSortedData = null; // Store received data before WebSocket closes
+
+
+        function connectWebSocket() {
+    socket = new WebSocket("ws://127.0.0.1:8000/ws");
+
+    socket.onopen = () => {
+        // WebSocket connection established. Start sending keepalive pings every 30 seconds.
+        keepAliveInterval = setInterval(() => {
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ type: "ping" })); // Send heartbeat to maintain connection
+            }
+        }, 30000);
+    };
+
+    socket.onmessage = (event) => {
+        try {
+            // Parse and store the received sorted data
+            finalSortedData = JSON.parse(event.data);
+        } catch (error) {
+            // Silently handle parsing errors to avoid breaking execution
+        }
+    };
+
+    socket.onclose = () => {
+        clearInterval(keepAliveInterval); // Stop keepalive messages
+
+        if (!stopReconnection) {
+            // Automatically reconnect if reconnection is allowed
+            setTimeout(connectWebSocket, 1);
+        } else if (finalSortedData) {
+            // If the connection is permanently closed and data was received, save and redirect
+            localStorage.setItem("sortedData", JSON.stringify(finalSortedData));
+            window.location.href = "results.html";
+        }
+    };
+
+    socket.onerror = () => {
+        // Close the WebSocket connection on error
+        socket.close();
+    };
+}
+
+// Initialize the WebSocket connection
+connectWebSocket();
+
+// Initialize an array to track the current state of the canvas pixels
+const canvasData = new Uint32Array(canvas.width * canvas.height);
+
+// Utility function to get the index of a pixel in the canvasData array
+function getCanvasIndex(x, y) {
+    return y * canvas.width + x;
+}
+
+// Snapshot of the previous canvas state for change detection
+let lastCanvasData = new Uint32Array(canvas.width * canvas.height); 
+
+function sendDataToBackend() {
+    if (!isDrawingEnabled || !hasStartedDrawing) return; // Ensure drawing is active before sending data
+
+    const newData = {}; // Object to track newly filled pixels
+    let frame = 0; // Indicates if changes occurred
+
+    // Compare current canvas state with previous snapshot
+    canvasData.forEach((colorIndex, pixelIndex) => {
+        const lastColorIndex = lastCanvasData[pixelIndex];
+
+        if (colorIndex !== lastColorIndex) {
+            if (colorIndex > 0) {
+                // A new pixel has been filled
+                frame = 1;
+                const color = userPalette[colorIndex - 1];
+                newData[color] = (newData[color] || 0) + 1;
+            } else if (lastColorIndex > 0) {
+                // A previously filled pixel has been cleared
+                frame = 0; 
+            }
+        }
+    });
+
+    // Prepare and send the data based on detected changes
+    const payload = frame === 1 
+        ? { topic: topics[currentTopicIndex], data: newData }  // Send new filled pixels
+        : { topic: topics[currentTopicIndex], data: { frame0: 1 } }; // No activity or canvas cleared
+
+    lastCanvasData.set(canvasData); // Update snapshot
+    socket.send(JSON.stringify(payload)); 
+}
+
+        const translations = {
+            en: {
+                mainTitle: "Trialogue",
+                ratePrompt: "Rate your attitude towards the topic and click on the scale number that resonated with this task. A minus means a negative attitude, e.g. (-6) means \"I hate it\" and (-1) means \"I dislike it a bit.\" A plus means a positive attitude, e.g. (+6) means \"I like it very much, It's great!\" and (+1) means \"It's ok, I like it a bit.",
+                drawPrompt: "Confirm your numerical response with colored lines in any format, even doodles. You will have 60 seconds. Press the button when you are ready to start drawing.",
+                startButton: "Start",
+                submitButton: "Submit",
+                clearButton: "Clear Canvas",
+                alert: "Please rate your attitude towards the topic first",
+                timeUp: "Time is up",
+                postStartInstruction: "When you finish drawing, click the Submit button.",
+                epigraph: '"Here everyone will find something to do for soul and body"',
+                topics: [
+                    'I am a man',
+                    'I am a good man',
+                    'I am an evil man',
+                    'I am a smart man',
+                    'I am a stupid man',
+                    'Who am I?',
+                    'Sorrow',
+                    'Joy',
+                    'Me and my profession',
+                    'Me and my family',
+                    'Me and my past',
+                    'Me and my present',
+                    'Me and my future'
+                ]
+            },
+            ru: {
+                mainTitle: "Триалог",
+                ratePrompt: "Оцените своё отношение к теме и нажмите на ту цифру шкалы, которая откликнулась на это задания. Минус означает отрицательное отношение, например (-6) означает \"Я ненавижу это\", а (-1) означает \"Мне это немного не нравится.\" Плюс означает положительное отношение, например (+6) означает \"Мне это очень нравится, это отлично!\" а (+1) означает \"Нормально, мне это немного нравится.\"",
+                drawPrompt: "Подтвердите ваш цифровой отклик цветными линиями в свободном формате, даже каракулями. У вас будет 60 секунд. Нажмите кнопку, когда будете готовы начать рисовать",
+                startButton: "Старт",
+                submitButton: "Отправить",
+                clearButton: "Очистить",
+                alert: "Сначала оцените свое отношение к теме",
+                timeUp: "Время вышло",
+                postStartInstruction: "Когда закончите рисовать, нажмите кнопку Отправить.",
+                epigraph: '«Здесь каждый найдет занятие для души и тела»',
+                topics : [
+                    'Я – человек',
+                    'Я – добрый человек',
+                    'Я – злой человек',
+                    'Я – умный человек',
+                    'Я – глупый человек',
+                    'Кто Я?',
+                    'Огорчение',
+                    'Радость',
+                    'Я и моя профессия',
+                    'Я и моя семья',
+                    'Я и моё прошлое',
+                    'Я и моё настоящее',
+                    'Я и моё будущее'
+                ]
+            }
+        };
+
+        const topics = [
+            'I am a man',
+            'I am a good man',
+            'I am an evil man',
+            'I am a smart man',
+            'I am a stupid man',
+            'Who am I?',
+            'Sorrow',
+            'Joy',
+            'Me and my profession',
+            'Me and my family',
+            'Me and my past',
+            'Me and my present',
+            'Me and my future'
+        ];
+
+        // Application state variables
+let currentLang = 'en'; // Default language
+let currentTopicIndex = 0; // Tracks the active topic index
+let selectedRating = null; // Stores the user's selected rating
+let ratingIsSet = false; // Flag to track if a rating has been chosen
+
+// UI Elements
+const colorPalette = document.getElementById('colorPalette');
+const submitButton = document.getElementById('submitButton');
+const alert = document.getElementById('alert');
+
+// Initialize rating scale UI (split into two rows)
+const ratingRow1 = document.getElementById('ratingRow1');
+const ratingRow2 = document.getElementById('ratingRow2');
+
+// Generate rating buttons for the first row (-6 to 0)
+for (let i = -6; i <= 0; i++) {
+    const button = document.createElement('button');
+    button.className = 'rating-btn';
+    button.textContent = i;
+    button.onclick = () => selectRating(i);
+    ratingRow1.appendChild(button);
+}
+
+// Generate rating buttons for the second row (1 to 6)
+for (let i = 1; i <= 6; i++) {
+    const button = document.createElement('button');
+    button.className = 'rating-btn';
+    button.textContent = i;
+    button.onclick = () => selectRating(i);
+    ratingRow2.appendChild(button);
+}
+
+// Retrieve stored brush size or set default value
+const brushSize = parseInt(localStorage.getItem('brushSize')) || 2;
+
+// Clear canvas functionality
+clearButton.addEventListener("click", () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Reset canvas
+    canvasData.fill(0); // Reset pixel data tracking
+
+    // Notify server of canvas reset
+    socket.send(JSON.stringify({ topic: topics[currentTopicIndex], data: { frame0: 1 } }));
+});
+
+let updateInterval = null; // Interval for sending updates
+
+function startTimer() {
+    const overlay = document.getElementById("overlay");
+    const popup = document.getElementById("timerPopup");
+
+    // Reset any existing timer
+    if (timer) clearTimeout(timer);
+
+    // Start a 60-second timer
+    timer = setTimeout(() => {
+        isDrawingEnabled = false; // Disable drawing after time is up
+        submitButton.disabled = false; // Enable submit button
+        clearInterval(updateInterval); // Stop periodic updates
+
+        // Display time-up message
+        overlay.style.display = "block";
+        popup.style.display = "block";
+        popup.textContent = translations[currentLang].timeUp;
+        clearButton.disabled = true; // Prevent clearing the canvas
+
+        // Hide the popup after 2 seconds
+        setTimeout(() => {
+            overlay.style.display = "none";
+            popup.style.display = "none";
+        }, 2000);
+    }, 60000);
+}
+
+// Handle the start button click event
+startButton.addEventListener("click", () => {
+    if (isDrawingEnabled) return; // Prevent multiple activations
+
+    isDrawingEnabled = true;
+    hasStartedDrawing = false;
+
+    startButton.disabled = true; // Disable start button after activation
+    submitButton.disabled = true; // Prevent submission until time is up
+
+    // Send initial rating selection to the backend
+    socket.send(JSON.stringify({ topic: topics[currentTopicIndex], data: { rating: selectRating } }));
+
+    startTimer(); // Begin countdown timer
+
+    // Begin sending real-time updates to the backend
+    updateInterval = setInterval(() => {
+        if (isDrawingEnabled) sendDataToBackend();
+    }, pixelUpdateInterval);
+});
+
+        // Update the draw function to use the stored brush size
+function draw(e) {
+    // Ensure drawing is enabled, user has a color selected, and the action is valid
+    if (!isDrawing || !isDrawingEnabled || !currentColor) return;
+    
+    submitButton.disabled = false; // Enable the Submit button when drawing starts
+
+    // Get canvas boundaries and calculate current cursor position
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.floor(e.clientX - rect.left);
+    const y = Math.floor(e.clientY - rect.top);
+
+    // Calculate movement difference to interpolate pixels
+    const dx = Math.abs(x - lastX);
+    const dy = Math.abs(y - lastY);
+    const steps = Math.max(dx, dy); // Define the number of interpolation steps
+    const xStep = (x - lastX) / steps; // X-direction step size
+    const yStep = (y - lastY) / steps; // Y-direction step size
+
+    // Draw interpolated pixels between the last and current position
+    for (let i = 0; i <= steps; i++) {
+        const interpolatedX = Math.floor(lastX + i * xStep);
+        const interpolatedY = Math.floor(lastY + i * yStep);
+        const index = getCanvasIndex(interpolatedX, interpolatedY);
+
+        // Only fill pixels that haven't been filled yet
+        if (canvasData[index] === 0) {
+            ctx.fillStyle = currentColor; // Set brush color
+            ctx.fillRect(interpolatedX, interpolatedY, brushSize, brushSize); // Draw pixel
+            canvasData[index] = userPalette.indexOf(currentColor) + 1; // Store pixel color index
+        }
+    }
+
+    // Store the last cursor position for smooth drawing
+    lastX = x;
+    lastY = y;
+}
+
+        // Initialize color palette and selection functionality
+function selectColor(color, element) {
+    // Remove 'selected' class from all color boxes
+    document.querySelectorAll('.color-box').forEach(box => box.classList.remove('selected'));
+    
+    // Highlight the selected color box
+    element.classList.add('selected');
+
+    // Set the current drawing color
+    currentColor = color;
+}
+
+// Populate the color palette dynamically
+userPalette.forEach(color => {
+    const colorBox = document.createElement("div");
+    colorBox.className = "color-box";
+    colorBox.style.backgroundColor = color;
+    colorBox.onclick = () => selectColor(color, colorBox); // Assign click event to select color
+    document.getElementById("colorPalette").appendChild(colorBox);
+});
+
+// Auto-select the first color by default
+document.querySelector(".color-box").classList.add("selected");
+
+// Handle rating selection
+function selectRating(rating) {
+    selectedRating = rating;
+
+    // Update UI to reflect the selected rating
+    document.querySelectorAll('.rating-btn').forEach(btn => {
+        btn.classList.toggle('selected', btn.textContent === rating.toString());
+    });
+
+    // Enable the start button only on the first rating selection
+    if (!ratingIsSet) {
+        startButton.disabled = false;
+        ratingIsSet = true;
+    }
+}
+
+// Toggle between English and Russian language settings
+function toggleLanguage() {
+    currentLang = currentLang === 'en' ? 'ru' : 'en';
+    updateTexts(); // Refresh UI with new language text
+}
+
+// Update UI texts based on the selected language
+function updateTexts() {
+    document.getElementById('mainTitle').textContent = translations[currentLang].mainTitle;
+    document.getElementById('ratePrompt').textContent = translations[currentLang].ratePrompt;
+    document.getElementById('drawPrompt').textContent = translations[currentLang].drawPrompt;
+    document.getElementById('startButton').textContent = translations[currentLang].startButton;
+    document.getElementById('submitButton').textContent = translations[currentLang].submitButton;
+    document.getElementById('alert').textContent = translations[currentLang].alert;
+    document.querySelector('.epigraph div:first-child').textContent = translations[currentLang].epigraph;
+    document.getElementById('postStartInstruction').textContent = translations[currentLang].postStartInstruction;
+    document.getElementById('clearButton').textContent = translations[currentLang].clearButton;
+    document.getElementById('currentTopic').textContent = translations[currentLang].topics[currentTopicIndex];
+}
+
+submitButton.addEventListener('click', () => {
+    if (currentTopicIndex === topics.length - 1) {
+        // Last topic reached, prevent WebSocket reconnection
+        stopReconnection = true;
+        submitButton.disabled = true;
+        clearButton.disabled = true;
+
+        // Notify server that the session is finished
+        socket.send(JSON.stringify({ type: "finish" }));
+
+        // Clear the timer if it's active
+        if (timer) {
+            clearTimeout(timer);
+            timer = null;
+        }
+    } else {
+        // Move to the next topic
+        currentTopicIndex++;
+        document.getElementById('currentTopic').textContent = topics[currentTopicIndex];
+
+        updateTexts(); // Refresh UI texts
+
+        // Reset canvas and related state variables
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        selectedRating = null;
+        isDrawingEnabled = false;
+        
+        // Remove selection from rating buttons
+        document.querySelectorAll('.rating-btn').forEach(btn => btn.classList.remove('selected'));
+
+        // Disable start and submit buttons, but allow clearing
+        startButton.disabled = true;
+        submitButton.disabled = true;
+        clearButton.disabled = false;
+
+        // Reset the timer if it's active
+        if (timer) {
+            clearTimeout(timer);
+            timer = null;
+        }
+    }
+
+    // Ensure rating must be set again for the next topic
+    ratingIsSet = false;
+});
+
+let lastX = 0;
+let lastY = 0;
+
+// Handle mouse drawing events
+canvas.addEventListener("mousedown", (e) => {
+    if (!isDrawingEnabled) return; // Ignore if drawing is not enabled
+
+    hasStartedDrawing = true; // Mark the start of drawing
+    isDrawing = true;
+
+    // Capture the starting position
+    const rect = canvas.getBoundingClientRect();
+    lastX = Math.floor(e.clientX - rect.left);
+    lastY = Math.floor(e.clientY - rect.top);
+
+    draw(e); // Draw the initial pixel
+});
+
+// Continue drawing as the mouse moves
+canvas.addEventListener("mousemove", draw);
+
+// Stop drawing when the mouse is released or leaves the canvas
+canvas.addEventListener("mouseup", () => isDrawing = false);
+canvas.addEventListener("mouseout", () => isDrawing = false);
+
+// Handle touch-based drawing events
+canvas.addEventListener("touchstart", (e) => {
+    if (!isDrawingEnabled) return;
+    hasStartedDrawing = true;
+    startTouch(e);
+}, { passive: false });
+
+canvas.addEventListener("touchmove", drawTouch, { passive: false });
+canvas.addEventListener("touchend", stopTouch, { passive: false });
+
+// Convert touch coordinates to canvas coordinates
+function getTouchPos(touch) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
+    };
+}
+
+// Start drawing on touch event
+function startTouch(e) {
+    if (!isDrawingEnabled || !currentColor) return;
+    e.preventDefault(); // Prevent page scrolling while drawing
+
+    isDrawing = true;
+    const touch = e.touches[0];
+    const pos = getTouchPos(touch);
+
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+}
+
+// Continue drawing as touch moves
+function drawTouch(e) {
+    if (!isDrawing || !isDrawingEnabled || !currentColor) return;
+    e.preventDefault();
+
+    const touch = e.touches[0];
+    const pos = getTouchPos(touch);
+
+    ctx.lineTo(pos.x, pos.y);
+    ctx.strokeStyle = currentColor;
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+}
+
+// Stop drawing when touch ends
+function stopTouch() {
+    isDrawing = false;
+}
+
+// Start drawing with mouse
+function startDrawing(e) {
+    if (!isDrawingEnabled || !currentColor) return;
+    isDrawing = true;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+}
+
+// Stop drawing with mouse
+function stopDrawing() {
+    isDrawing = false;
+}
+
+// Automatically select the first color if available
+if (userPalette.length > 0) {
+    const firstColorBox = colorPalette.firstChild;
+    selectColor(userPalette[0], firstColorBox);
+}
+    </script>
+</body>
+</html>

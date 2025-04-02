@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            color: #2d3748;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: right;
+            margin-bottom: 2rem;
+        }
+
+        .language-btn {
+            background: none;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .language-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .epigraph {
+            text-align: center;
+            font-style: italic;
+            margin-bottom: 2rem;
+            color: #718096;
+        }
+
+        .epigraph-author {
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        h1 {
+            color: #2d3748;
+            margin: 0 0 1.5rem 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .instruction {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f7fafc;
+            border-radius: 12px;
+            line-height: 1.5;
+        }
+
+        #canvas {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            cursor: crosshair;
+            max-width: 100%;
+            margin: 1rem 0;
+        }
+
+        .controls {
+            background: #f7fafc;
+            padding: 1rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        #colorPicker {
+            width: 60px;
+            height: 40px;
+            padding: 0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        #brushSize {
+            width: 150px;
+            accent-color: #667eea;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        #brushSizeValue {
+            background: #667eea;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            min-width: 2.5rem;
+            text-align: center;
+        }
+
+        .button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: transform 0.1s;
+        }
+
+        .button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1rem;
+            gap: 1rem;
+        }
+
+        #submitButton {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="language-btn" onclick="toggleLanguage()">EN/RU</button>
+        </div>
+
+        <div class="epigraph">
+            <div>"Here everyone will find something to do for soul and body"</div>
+            <div class="epigraph-author">Three-Eyed Webster-104</div>
+        </div>
+
+        <h1 id="mainTitle">Contact with Brush and Color Workout</h1>
+        <p class="subtitle" id="subtitle">Express yourself through colors and shapes</p>
+        
+        <div class="instruction" id="instruction">
+            Please practice drawing different doodles with lines of different thicknesses and colors. When you finish training, press the "Submit" button
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>
+                    <span id="colorLabel">Color:</span>
+                    <input type="color" id="colorPicker" value="#667eea">
+                </label>
+            </div>
+            <div class="control-group">
+                <label>
+                    <span id="brushLabel">Brush size:</span>
+                    <input type="range" id="brushSize" min="1" max="50" value="5">
+                    <span id="brushSizeValue">5</span>px
+                </label>
+            </div>
+            <button class="button" id="clearButton">Clear Canvas</button>
+        </div>
+        
+        <canvas id="canvas" width="700" height="400"></canvas>
+        
+        <div class="button-container">
+            <button class="button" id="submitButton">Submit</button>
+        </div>
+    </div>
+
+    <script>
+
+// Language translations for UI elements
+const translations = {
+    en: {
+        mainTitle: "Contact with Brush and Color Workout",
+        subtitle: "Express yourself through colors and shapes",
+        instruction: "Please practice drawing different doodles with lines of different thicknesses and colors. When you finish training, press the \"Submit\" button",
+        colorLabel: "Color:",
+        brushLabel: "Brush size:",
+        clearButton: "Clear Canvas",
+        submitButton: "Submit",
+        epigraph: "\"Here everyone will find something to do for soul and body\""
+    },
+    ru: {
+        mainTitle: "Знакомство c кистью и цветом",
+        subtitle: "Выразите себя через цвета и формы",
+        instruction: "Пожалуйста, потренируйтесь рисовать разные каракули линиями разной толщины и разного цвета. Когда закончите тренировку, нажмите кнопку «Отправить»",
+        colorLabel: "Цвет:",
+        brushLabel: "Размер кисти:",
+        clearButton: "Очистить",
+        submitButton: "Отправить",
+        epigraph: "«Здесь каждый найдет занятие для души и тела»"
+    }
+};
+
+let currentLang = 'en'; // Default language
+
+// Toggle between English and Russian
+function toggleLanguage() {
+    currentLang = currentLang === 'en' ? 'ru' : 'en';
+    updateTexts(); // Update UI text elements
+}
+
+// Update UI elements with the selected language
+function updateTexts() {
+    document.getElementById('mainTitle').textContent = translations[currentLang].mainTitle;
+    document.getElementById('subtitle').textContent = translations[currentLang].subtitle;
+    document.getElementById('instruction').textContent = translations[currentLang].instruction;
+    document.getElementById('colorLabel').textContent = translations[currentLang].colorLabel;
+    document.getElementById('brushLabel').textContent = translations[currentLang].brushLabel;
+    document.getElementById('clearButton').textContent = translations[currentLang].clearButton;
+    document.getElementById('submitButton').textContent = translations[currentLang].submitButton;
+    document.querySelector('.epigraph div:first-child').textContent = translations[currentLang].epigraph;
+}
+
+// UI Elements
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const colorPicker = document.getElementById('colorPicker');
+const brushSize = document.getElementById('brushSize');
+const brushSizeValue = document.getElementById('brushSizeValue');
+const clearButton = document.getElementById('clearButton');
+const submitButton = document.getElementById('submitButton');
+
+let isDrawing = false;
+let lastX = 0;
+let lastY = 0;
+
+// Clear canvas
+clearButton.addEventListener('click', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+});
+
+// Submit and redirect
+submitButton.addEventListener('click', () => {
+    window.location.href = 'palette-page.html';
+});
+
+// Update displayed brush size when slider changes
+brushSize.addEventListener('input', () => {
+    brushSizeValue.textContent = brushSize.value;
+});
+
+// Mouse event listeners for drawing
+canvas.addEventListener('mousedown', startDrawing);
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('mouseup', stopDrawing);
+canvas.addEventListener('mouseout', stopDrawing);
+
+// Touch event listeners for drawing
+canvas.addEventListener('touchstart', handleTouch, { passive: false });
+canvas.addEventListener('touchmove', handleTouch, { passive: false });
+canvas.addEventListener('touchend', stopDrawing);
+
+// Handle touch-based drawing
+function handleTouch(e) {
+    e.preventDefault(); // Prevent scrolling while drawing
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+
+    if (e.type === 'touchstart') {
+        isDrawing = true;
+        [lastX, lastY] = [x, y];
+    } else if (e.type === 'touchmove' && isDrawing) {
+        draw({ offsetX: x, offsetY: y });
+    }
+}
+
+// Start drawing
+function startDrawing(e) {
+    isDrawing = true;
+    [lastX, lastY] = [e.offsetX, e.offsetY];
+}
+
+// Drawing function
+function draw(e) {
+    if (!isDrawing) return;
+
+    ctx.beginPath();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = brushSize.value;
+    ctx.strokeStyle = colorPicker.value;
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(e.offsetX, e.offsetY);
+    ctx.stroke();
+
+    [lastX, lastY] = [e.offsetX, e.offsetY];
+}
+
+// Stop drawing
+function stopDrawing() {
+    isDrawing = false;
+}
+
+// Initialize UI texts
+updateTexts();
+    </script>
+</body>
+</html>
